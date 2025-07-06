@@ -1,62 +1,21 @@
-#include <cmath>
 #include <iostream>
+#include <memory>
 
-class vec3;
-struct Ray;
-double dot(const vec3& v1, const vec3& v2);
-bool hit_sphere(const vec3& center, double radius, const Ray& r);
+#include "cpp_include/hitable.hpp"
+#include "cpp_include/hitable_list.hpp"
+#include "cpp_include/ray.hpp"
+#include "cpp_include/sphere.hpp"
+#include "cpp_include/vec3.hpp"
 
-class vec3 {
-   public:
-    double x;
-    double y;
-    double z;
-
-    vec3(double x, double y, double z) : x(x), y(y), z(z) {}
-
-    double length() const { return std::sqrt(x * x + y * y + z * z); }
-
-    vec3 unit_vector() const {
-        double len = length();
-        return vec3(x / len, y / len, z / len);
+vec3 color(const Ray& r, hitable* world) {
+    hit_record rec;
+    if (world->hit(r, 0.0, MAXFLOAT, rec)) {
+        return (vec3(rec.normal.x + 1, rec.normal.y + 1, rec.normal.z + 1) *
+                0.5);
     }
-
-    vec3 operator+(const vec3& other) const {
-        return vec3(x + other.x, y + other.y, z + other.z);
-    }
-    vec3 operator-(const vec3& other) const {
-        return vec3(x - other.x, y - other.y, z - other.z);
-    }
-
-    vec3 operator*(const double& other) const {
-        return vec3(x * other, y * other, z * other);
-    }
-};
-
-struct Ray {
-    vec3 origin;
-    vec3 direction;
-    vec3 color(bool want_sphere = false) const {
-        if (want_sphere && hit_sphere(vec3(0, 0, -1), 0.5, *this))
-            return vec3(1, 0, 0);
-        vec3 unit_vector = direction.unit_vector();
-        float t = 0.5 * (unit_vector.y + 1.0);
-        return vec3((vec3(1.0, 1.0, 1.0) * (1.0 - t)) +
-                    (vec3(0.5, 0.7, 1.0) * t));
-    }
-};
-
-double dot(const vec3& v1, const vec3& v2) {
-    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-bool hit_sphere(const vec3& center, double radius, const Ray& r) {
-    vec3 oc = r.origin - center;
-    double a = dot(r.direction, r.direction);
-    double b = 2.0 * dot(oc, r.direction);
-    double c = dot(oc, oc) - radius * radius;
-    double disc = b * b - 4 * a * c;
-    return (disc > 0);
+    vec3 unit_vector = r.direction.unit_vector();
+    float t = 0.5 * (unit_vector.y + 1.0);
+    return vec3((vec3(1.0, 1.0, 1.0) * (1.0 - t)) + (vec3(0.5, 0.7, 1.0) * t));
 }
 
 int main() {
@@ -69,6 +28,14 @@ int main() {
     vec3 vertical = vec3(0.0, 2.0, 0.0);
     vec3 origin = vec3(0.0, 0.0, 0.0);
 
+    std::unique_ptr<hitable> list[2];
+    list[0] = std::make_unique<sphere>(vec3(0, 0, -1), 0.5);
+    list[1] = std::make_unique<sphere>(vec3(0, -100.5, -1), 100);
+
+    hitable* raw_list[2] = {list[0].get(), list[1].get()};
+
+    auto world = std::make_unique<hitable_list>(raw_list, 2);
+
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             double u = static_cast<double>(i) / nx;
@@ -77,7 +44,9 @@ int main() {
             Ray ray = {.origin = origin,
                        .direction = lower_left_corner + (horizontal * u) +
                                     (vertical * v)};
-            vec3 col = ray.color(true);
+
+            // vec3 p = ray.point_at_param(2.0);
+            vec3 col = color(ray, world.get());
 
             int ir = (255.99 * col.x);
             int ig = (255.99 * col.y);
