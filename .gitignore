@@ -2,5 +2,6 @@
 !.gitignore
 !*.cpp
 !*.rs
+!*.zig
 !cpp_include/
 !cpp_include/*.hpp
