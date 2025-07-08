@@ -5,6 +5,11 @@ struct Ray {
     vec3 origin;
     vec3 direction;
     vec3 point_at_param(double t) const { return origin + (direction * t); }
+
+   public:
+    Ray() {}
+    Ray(const vec3& origin, const vec3& direction)
+        : origin(origin), direction(direction) {}
 };
 
 inline double hit_sphere(const vec3& center, double radius, const Ray& r) {

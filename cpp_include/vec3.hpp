@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <iostream>
 
 class vec3 {
    public:
@@ -30,6 +31,19 @@ class vec3 {
     }
     vec3 operator/(const double& other) const {
         return vec3(x / other, y / other, z / other);
+    }
+
+    vec3& operator+=(const vec3& vec2) {
+        x += vec2.x;
+        y += vec2.y;
+        z += vec2.z;
+        return *this;
+    }
+    vec3& operator/=(const double& value) {
+        x /= value;
+        y /= value;
+        z /= value;
+        return *this;
     }
 };
 
