@@ -8,11 +8,19 @@
 #include "cpp_include/sphere.hpp"
 #include "cpp_include/vec3.hpp"
 
+vec3 random_in_unit_sphere() {
+    vec3 p;
+    do {
+        p = (vec3(drand48(), drand48(), drand48()) * 2.0) - vec3(1, 1, 1);
+    } while (dot(p, p) >= 1.0);
+    return p;
+}
+
 vec3 color(const Ray& r, hitable* world) {
     hit_record rec;
     if (world->hit(r, 0.0, MAXFLOAT, rec)) {
-        return (vec3(rec.normal.x + 1, rec.normal.y + 1, rec.normal.z + 1) *
-                0.5);
+        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return color(Ray(rec.p, target - rec.p), world) * 0.5;
     }
     vec3 unit_vector = r.direction.unit_vector();
     float t = 0.5 * (unit_vector.y + 1.0);

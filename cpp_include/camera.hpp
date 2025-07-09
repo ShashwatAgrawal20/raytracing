@@ -4,12 +4,12 @@
 #include "vec3.hpp"
 
 class camera {
-   public:
     vec3 origin;
     vec3 lower_left_corner;
     vec3 horizontal;
     vec3 vertical;
 
+   public:
     camera()
         : origin(0.0, 0.0, 0.0),
           lower_left_corner(-2.0, -1.0, -1.0),
